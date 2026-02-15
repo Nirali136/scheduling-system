@@ -18,7 +18,8 @@ const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     const validationSchema = Yup.object().shape({
-        username: Yup.string()
+        email: Yup.string()
+            .email(staticText.auth.validation.emailInvalid)
             .required(staticText.auth.validation.emailRequired),
         password: Yup.string()
             .required(staticText.auth.validation.passwordRequired),
@@ -26,7 +27,7 @@ const Login: React.FC = () => {
 
     const formik = useFormik({
         initialValues: {
-            username: '',
+            email: '',
             password: ''
         },
         validationSchema,
@@ -35,14 +36,14 @@ const Login: React.FC = () => {
             try {
                 const apiService = new APICallService(
                     LOGIN,
-                    { email: values.username, password: values.password }
+                    { email: values.email, password: values.password }
                 );
 
                 const response = await apiService.callAPI();
 
                 if (response) {
                     saveAuth(response.token);
-                    saveCurrentUser({ _id: response.user._id });
+                    saveCurrentUser(response.user);
                     success(staticText.toast.auth.login);
                     navigate('/dashboard');
                 }
@@ -67,27 +68,27 @@ const Login: React.FC = () => {
 
                             <Form onSubmit={formik.handleSubmit}>
                                 <Form.Group className="mb-4">
-                                    <Form.Label>{staticText.auth.usernameLabel} / Email</Form.Label>
+                                    <Form.Label>{staticText.auth.emailLabel}</Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text className={`bg-light border-end-0 text-secondary ${formik.touched.username && formik.errors.username ? 'border-danger' : ''}`}>
+                                        <InputGroup.Text className={`bg-white border-end-0 text-secondary ${formik.touched.email && formik.errors.email ? 'border-danger' : ''}`}>
                                             <FiMail size={18} />
                                         </InputGroup.Text>
                                         <Form.Control
-                                            type="text"
-                                            placeholder="Enter your username or email"
-                                            className={`border-start-0 ps-0 ${formik.touched.username && formik.errors.username ? 'is-invalid' : ''}`}
-                                            {...formik.getFieldProps('username')}
+                                            type="email"
+                                            placeholder="Enter your email"
+                                            className={`border-start-0 ps-0 ${formik.touched.email && formik.errors.email ? 'is-invalid' : ''}`}
+                                            {...formik.getFieldProps('email')}
                                         />
                                     </InputGroup>
-                                    {formik.touched.username && formik.errors.username && (
-                                        <div className="text-danger small mt-1">{formik.errors.username}</div>
+                                    {formik.touched.email && formik.errors.email && (
+                                        <div className="text-danger small mt-1">{formik.errors.email}</div>
                                     )}
                                 </Form.Group>
 
                                 <Form.Group className="mb-4">
                                     <Form.Label>{staticText.auth.passwordLabel}</Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text className={`bg-light border-end-0 text-secondary ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}>
+                                        <InputGroup.Text className={`bg-white border-end-0 text-secondary ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}>
                                             <FiLock size={18} />
                                         </InputGroup.Text>
                                         <Form.Control
@@ -97,7 +98,7 @@ const Login: React.FC = () => {
                                             {...formik.getFieldProps('password')}
                                         />
                                         <InputGroup.Text
-                                            className={`bg-light border-start-0 cursor-pointer ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}
+                                            className={`bg-white border-start-0 cursor-pointer ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}
                                             onClick={() => setPasswordVisible(!passwordVisible)}
                                             style={{ cursor: 'pointer' }}
                                         >

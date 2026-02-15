@@ -28,7 +28,7 @@ const BookingPage: React.FC = () => {
         try {
             const apiService = new APICallService(
                     GET_AVAILABILITY_DATES,
-                    { userId: userId },
+                    {},
                     [userId]
                 );
             const response = await apiService.callAPI();

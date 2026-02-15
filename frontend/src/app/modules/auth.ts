@@ -1,5 +1,19 @@
+
 export const getAuth = () => {
     return localStorage.getItem('token');
+};
+
+export const getUserId = () => {
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            return user._id;
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
 };
 
 export const useAuth = () => {
@@ -8,12 +22,18 @@ export const useAuth = () => {
         else localStorage.removeItem('token');
     };
 
-    const currentUser = {
-    };
-
     const saveCurrentUser = (user: any) => {
-        localStorage.setItem('userId', user._id);
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('currentUser');
+        }
     };
 
-    return { getAuth, saveAuth, currentUser, saveCurrentUser };
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+    };
+
+    return { getAuth, getUserId, saveAuth, saveCurrentUser, logout };
 };

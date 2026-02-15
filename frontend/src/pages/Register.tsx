@@ -58,7 +58,7 @@ const Register: React.FC = () => {
 
                 if (response) {
                     saveAuth(response.token);
-                    saveCurrentUser({ _id: response.user._id });
+                    saveCurrentUser(response.user);
                     success(staticText.toast.auth.registerSuccess);
                     navigate('/dashboard');
                 }
@@ -86,7 +86,7 @@ const Register: React.FC = () => {
                                 <Form.Group className="mb-3">
                                     <Form.Label>{staticText.auth.usernameLabel} <span className="text-danger">*</span></Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text className={`bg-light border-end-0 text-secondary ${formik.touched.name && formik.errors.name ? 'border-danger' : ''}`}>
+                                        <InputGroup.Text className={`bg-white border-end-0 text-secondary ${formik.touched.name && formik.errors.name ? 'border-danger' : ''}`}>
                                             <FiUser size={18} />
                                         </InputGroup.Text>
                                         <Form.Control
@@ -105,7 +105,7 @@ const Register: React.FC = () => {
                                 <Form.Group className="mb-3">
                                     <Form.Label>{staticText.auth.emailLabel} <span className="text-danger">*</span></Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text className={`bg-light border-end-0 text-secondary ${formik.touched.email && formik.errors.email ? 'border-danger' : ''}`}>
+                                        <InputGroup.Text className={`bg-white border-end-0 text-secondary ${formik.touched.email && formik.errors.email ? 'border-danger' : ''}`}>
                                             <FiMail size={18} />
                                         </InputGroup.Text>
                                         <Form.Control
@@ -124,7 +124,7 @@ const Register: React.FC = () => {
                                 <Form.Group className="mb-4">
                                     <Form.Label>{staticText.auth.passwordLabel} <span className="text-danger">*</span></Form.Label>
                                     <InputGroup>
-                                        <InputGroup.Text className={`bg-light border-end-0 text-secondary ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}>
+                                        <InputGroup.Text className={`bg-white border-end-0 text-secondary ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}>
                                             <FiLock size={18} />
                                         </InputGroup.Text>
                                         <Form.Control
@@ -134,7 +134,7 @@ const Register: React.FC = () => {
                                             {...formik.getFieldProps('password')}
                                         />
                                         <InputGroup.Text
-                                            className={`bg-light border-start-0 cursor-pointer ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}
+                                            className={`bg-white border-start-0 cursor-pointer ${formik.touched.password && formik.errors.password ? 'border-danger' : ''}`}
                                             onClick={() => setPasswordVisible(!passwordVisible)}
                                             style={{ cursor: 'pointer' }}
                                         >

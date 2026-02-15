@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import BookingPage from './pages/BookingPage';
-import { Container } from 'react-bootstrap';
+import { getAuth } from './app/modules/auth';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -14,26 +14,23 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const token = localStorage.getItem('token');
+    const token = getAuth();
     if (!token) {
         return <Navigate to="/login" replace />;
     }
     return <>{children}</>;
 };
 
-// Public Route wrapper (optional, for layout)
 const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const token = getAuth();
+    const hideNav = !token;
+
     return (
         <div className="d-flex flex-column min-vh-100">
-            <Navigation />
+            {!hideNav && <Navigation />}
             <main className="flex-grow-1">
                 {children}
             </main>
-            <footer className="bg-light text-center py-3 mt-auto">
-                <Container>
-                    <small className="text-muted">© 2024 Scheduling System</small>
-                </Container>
-            </footer>
         </div>
     )
 }
@@ -46,6 +43,8 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
+                    <Route path="/book/:userId" element={<BookingPage />} />
+
                     <Route
                         path="/dashboard"
                         element={
@@ -54,8 +53,6 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
-
-                    <Route path="/book/:userId" element={<BookingPage />} />
 
                     <Route path="/" element={<Navigate to="/login" />} />
                 </Routes>

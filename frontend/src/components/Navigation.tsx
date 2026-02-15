@@ -1,10 +1,11 @@
 import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import { getAuth } from '../app/modules/auth';
 
 const Navigation: React.FC = () => {
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
+    const token = getAuth();
 
     const handleLogout = () => {
         localStorage.removeItem('token');

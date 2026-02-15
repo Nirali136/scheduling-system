@@ -72,7 +72,6 @@ const ProjectionBuilder = class {
         const projection = {};
 
         this.withBasicInfo = () => {
-            // Updated to use username instead of name_ as per user recent change
             projection[TableFields.username] = 1;
             projection[TableFields.ID] = 1;
             projection[TableFields.email] = 1;
