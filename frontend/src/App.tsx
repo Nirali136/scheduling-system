@@ -6,7 +6,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import BookingPage from './pages/BookingPage';
-import { getAuth } from './app/modules/auth';
+import { useAppSelector } from './store/hooks';
+import { selectCurrentToken } from './store/slices/authSlice';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -14,7 +15,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const token = getAuth();
+    const token = useAppSelector(selectCurrentToken);
     if (!token) {
         return <Navigate to="/login" replace />;
     }
@@ -22,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 };
 
 const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const token = getAuth();
+    const token = useAppSelector(selectCurrentToken);
     const hideNav = !token;
 
     return (

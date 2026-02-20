@@ -3,7 +3,8 @@ import { Container, Row, Col, Form, Button, ListGroup, Card, Table, Alert } from
 import APICallService from '../api/apiCallService';
 import { SAVE_AVAILABILITY, GET_BOOKINGS } from '../api/apiEndPoints';
 import { format } from 'date-fns';
-import { useAuth } from '../app/modules/auth';
+import { useAppSelector } from '../store/hooks';
+import { selectCurrentUser } from '../store/slices/authSlice';
 
 interface Availability {
     date: string;
@@ -21,7 +22,8 @@ interface Booking {
 }
 
 const Dashboard: React.FC = () => {
-    const { getUserId } = useAuth();
+    const user = useAppSelector(selectCurrentUser);
+    const userId = user?._id;
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
@@ -31,11 +33,11 @@ const Dashboard: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [message, setMessage] = useState<string>('');
 
-    const userId = getUserId();
-
     useEffect(() => {
-        fetchBookings();
-    }, []);
+        if (userId) {
+            fetchBookings();
+        }
+    }, [userId]);
 
     const fetchBookings = async () => {
         try {

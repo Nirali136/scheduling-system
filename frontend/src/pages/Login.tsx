@@ -8,12 +8,13 @@ import { LOGIN } from '../api/apiEndPoints';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useStaticText } from '../utils/staticJSON';
 import { success } from '../utils/toast';
-import { useAuth } from '../app/modules/auth';
+import { useAppDispatch } from '../store/hooks';
+import { setCredentials } from '../store/slices/authSlice';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const staticText = useStaticText();
-    const { saveAuth, saveCurrentUser } = useAuth();
+    const dispatch = useAppDispatch();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -42,8 +43,7 @@ const Login: React.FC = () => {
                 const response = await apiService.callAPI();
 
                 if (response) {
-                    saveAuth(response.token);
-                    saveCurrentUser(response.user);
+                    dispatch(setCredentials({ user: response.user, token: response.token }));
                     success(staticText.toast.auth.login);
                     navigate('/dashboard');
                 }

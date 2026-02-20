@@ -3,7 +3,8 @@ import * as constants from "../utils/constants";
 import GlobalValidations from "../utils/validations";
 import * as apiEndpoints from "./apiEndPoints";
 import axios from "axios";
-import { getAuth } from "../app/modules/auth";
+// import { getAuth } from "../app/modules/auth"; 
+import { store } from "../store/store";
 
 class APICallService {
     public url: any;
@@ -48,7 +49,8 @@ class APICallService {
         };
         try {
             var mainAPIName = apiName + " " + apiType;
-            let token = getAuth();
+            // let token = getAuth();
+            let token = store.getState().auth.token;
             if (!this.listApi.includes(mainAPIName)) {
                 myHeaders = { ...myHeaders, Authorization: "Bearer " + token };
             }
