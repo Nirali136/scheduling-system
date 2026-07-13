@@ -1,10 +1,11 @@
-const Availability = require("../models/Availability");
-const { TableFields } = require("../../utils/constants");
-const { format, addMinutes, parse, isBefore, startOfDay } = require('date-fns');
+import Availability from "../models/Availability";
+import { TableFields } from "../../utils/constants";
+import { format, addMinutes, parse, isBefore, startOfDay } from 'date-fns';
+import Booking from "../models/Booking";
 
-class AvailabilityService {
+export default class AvailabilityService {
 
-    static saveAvailability = async (userId, data) => {
+    static saveAvailability = async (userId: string, data: any) => {
         const newAvailability = new Availability({
             [TableFields.userId]: userId,
             [TableFields.date]: new Date(data.date),
@@ -14,8 +15,8 @@ class AvailabilityService {
         return await newAvailability.save();
     };
 
-    static getAvailabilityDateRecords = (userId, date) =>
-        new ProjectionBuilder(async function () {
+    static getAvailabilityDateRecords = (userId: string, date: string) =>
+        new ProjectionBuilder(async function (this: any) {
             const searchDate = new Date(date);
             const nextDay = new Date(searchDate);
             nextDay.setDate(searchDate.getDate() + 1);
@@ -29,13 +30,11 @@ class AvailabilityService {
             }, this);
         });
 
-    static calculateSlots = async (userId, date) => {
-
+    static calculateSlots = async (userId: string, date: string) => {
         const availabilities = await AvailabilityService.getAvailabilityDateRecords(userId, date)
             .withTime()
             .execute();
 
-        const Booking = require("../models/Booking");
         const searchDate = new Date(date);
         const nextDay = new Date(searchDate);
         nextDay.setDate(searchDate.getDate() + 1);
@@ -45,7 +44,7 @@ class AvailabilityService {
             [TableFields.date]: { $gte: searchDate, $lt: nextDay }
         });
 
-        let allSlots = [];
+        let allSlots: string[] = [];
         const baseDate = new Date(); // Arbitrary date base for time parsing
 
         for (const availability of availabilities) {
@@ -68,34 +67,37 @@ class AvailabilityService {
         return [...new Set(allSlots)].sort();
     }
 
-    static getUniqueDates = (userId) =>
-        new ProjectionBuilder(async function () {
+    static getUniqueDates = (userId: string) =>
+        new ProjectionBuilder(async function (this: any) {
             const now = startOfDay(new Date());
             const availabilities = await Availability.find({
                 [TableFields.userId]: userId,
                 [TableFields.date]: { $gte: now }
             }, this).sort({ [TableFields.date]: 1 });
-            return [...new Set(availabilities.map(a => format(new Date(a[TableFields.date]), 'yyyy-MM-dd')))];
+            return [...new Set(availabilities.map(a => format(new Date(a[TableFields.date] as Date), 'yyyy-MM-dd')))];
         });
 }
 
-const ProjectionBuilder = class {
-    constructor(methodToExecute) {
-        const projection = {};
+class ProjectionBuilder {
+    private projection: Record<string, number> = {};
+    private methodToExecute: (this: Record<string, number>) => Promise<any>;
 
-        this.withTime = () => {
-            projection[TableFields.startTime] = 1;
-            projection[TableFields.endTime] = 1;
-            return this;
-        };
-
-        this.withDate = () => {
-            projection[TableFields.date] = 1;
-            return this;
-        };
-
-        this.execute = async () => await methodToExecute.call(projection);
+    constructor(methodToExecute: (this: Record<string, number>) => Promise<any>) {
+        this.methodToExecute = methodToExecute;
     }
-};
 
-module.exports = AvailabilityService;
+    withTime() {
+        this.projection[TableFields.startTime] = 1;
+        this.projection[TableFields.endTime] = 1;
+        return this;
+    }
+
+    withDate() {
+        this.projection[TableFields.date] = 1;
+        return this;
+    }
+
+    async execute() {
+        return await this.methodToExecute.call(this.projection);
+    }
+}

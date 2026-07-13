@@ -1,6 +1,6 @@
-const API = require("../utils/apiBuilder");
-const AvailabilityController = require("../controllers/users/AvailabilityController");
-const auth = require("../middleware/auth");
+import API from "../utils/apiBuilder";
+import * as AvailabilityController from "../controllers/users/AvailabilityController";
+import auth from "../middleware/auth";
 
 const router = API.configRoute("/availability")
     .addPath("/")
@@ -14,4 +14,4 @@ const router = API.configRoute("/availability")
 
     .getRouter();
 
-module.exports = router;
+export default router;

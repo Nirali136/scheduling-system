@@ -2,10 +2,11 @@
     "name": "scheduling-system-backend",
     "version": "1.0.0",
     "description": "Backend for scheduling system",
-    "main": "src/app.js",
+    "main": "src/app.ts",
     "scripts": {
-        "start": "node src/app.js",
-        "dev": "nodemon src/app.js"
+        "start": "node dist/app.js",
+        "dev": "nodemon --exec ts-node src/app.ts",
+        "build": "tsc"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -22,6 +23,15 @@
         "validator": "^13.15.26"
     },
     "devDependencies": {
-        "nodemon": "^3.0.3"
+        "@types/bcryptjs": "^2.4.6",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/jsonwebtoken": "^9.0.6",
+        "@types/morgan": "^1.9.9",
+        "@types/node": "^20.11.24",
+        "@types/node-cron": "^3.0.11",
+        "nodemon": "^3.0.3",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
     }
 }

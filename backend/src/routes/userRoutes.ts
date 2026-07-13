@@ -1,7 +1,6 @@
-const API = require("../utils/apiBuilder");
-const AuthController = require("../controllers/users/AuthController");
-const { TableFields } = require("../utils/constants");
-const auth = require("../middleware/auth");
+import API from "../utils/apiBuilder";
+import * as AuthController from "../controllers/users/AuthController";
+import auth from "../middleware/auth";
 
 const router = API.configRoute("/user")
     .addPath("/register")
@@ -18,4 +17,4 @@ const router = API.configRoute("/user")
     .build()
     .getRouter();
 
-module.exports = router;
+export default router;

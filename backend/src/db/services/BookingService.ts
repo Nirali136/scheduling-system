@@ -1,16 +1,16 @@
-const Availability = require("../models/Availability");
-const Booking = require("../models/Booking");
-const { TableFields } = require("../../utils/constants");
-const { format, addMinutes, parse } = require('date-fns');
+import Availability from "../models/Availability";
+import Booking from "../models/Booking";
+import { TableFields } from "../../utils/constants";
+import { format, addMinutes, parse } from 'date-fns';
 
-class BookingService {
-    static getBookings = (userId) =>
-        new ProjectionBuilder(async function () {
+export default class BookingService {
+    static getBookings = (userId: string) =>
+        new ProjectionBuilder(async function (this: any) {
             return await Booking.find({ [TableFields.userId]: userId }, this)
                 .sort({ [TableFields.date]: 1, [TableFields.startTime]: 1 });
         });
 
-    static createBooking = async (userId, data) => {
+    static createBooking = async (userId: string, data: any) => {
         const date = data[TableFields.date] || data.date;
         const startTime = data[TableFields.startTime] || data.startTime;
         const guestName = data[TableFields.guestName] || data.guestName;
@@ -44,7 +44,6 @@ class BookingService {
             const rangeEnd = parse(avail[TableFields.endTime], 'HH:mm', baseDate);
             const bookingTimeParsed = parse(startTime, 'HH:mm', baseDate);
 
-
             if (bookingTimeParsed >= rangeStart && bookingTimeParsed < rangeEnd) {
                 isValidSlot = true;
                 break;
@@ -71,21 +70,24 @@ class BookingService {
     };
 }
 
-const ProjectionBuilder = class {
-    constructor(methodToExecute) {
-        const projection = {};
+class ProjectionBuilder {
+    private projection: Record<string, number> = {};
+    private methodToExecute: (this: Record<string, number>) => Promise<any>;
 
-        this.withBasicInfo = () => {
-            projection[TableFields.guestName] = 1;
-            projection[TableFields.guestEmail] = 1;
-            projection[TableFields.date] = 1;
-            projection[TableFields.startTime] = 1;
-            projection[TableFields.endTime] = 1;
-            return this;
-        };
-
-        this.execute = async () => await methodToExecute.call(projection);
+    constructor(methodToExecute: (this: Record<string, number>) => Promise<any>) {
+        this.methodToExecute = methodToExecute;
     }
-};
 
-module.exports = BookingService;
+    withBasicInfo() {
+        this.projection[TableFields.guestName] = 1;
+        this.projection[TableFields.guestEmail] = 1;
+        this.projection[TableFields.date] = 1;
+        this.projection[TableFields.startTime] = 1;
+        this.projection[TableFields.endTime] = 1;
+        return this;
+    }
+
+    async execute() {
+        return await this.methodToExecute.call(this.projection);
+    }
+}

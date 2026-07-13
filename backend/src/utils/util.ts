@@ -1,7 +1,7 @@
-const fs = require("fs");
+import fs from 'fs';
 
-class Util {
-    static getErrorMessage(error) {
+export default class Util {
+    static getErrorMessage(error: any) {
         if (error.name === "ValidationError") {
             return { error: error.message };
         }
@@ -12,7 +12,7 @@ class Util {
         return { error: error.message };
     }
 
-    static getErrorMessageFromString(message) {
+    static getErrorMessageFromString(message: string) {
         return { error: message };
     }
 
@@ -20,4 +20,3 @@ class Util {
         return `http://localhost:${process.env.PORT || 3000}`;
     }
 }
-module.exports = Util;

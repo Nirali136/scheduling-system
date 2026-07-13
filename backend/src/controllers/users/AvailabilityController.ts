@@ -1,7 +1,9 @@
-const AvailabilityService = require("../../db/services/AvailabilityService");
-const ValidationError = require("../../utils/ValidationError");
+import AvailabilityService from "../../db/services/AvailabilityService";
+import ValidationError from "../../utils/ValidationError";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../../middleware/auth";
 
-exports.saveAvailability = async (req, res) => {
+export const saveAvailability = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const availability = await AvailabilityService.saveAvailability(req.user._id, req.body);
         return availability;
@@ -10,11 +12,11 @@ exports.saveAvailability = async (req, res) => {
     }
 };
 
-exports.getAvailability = async (req, res) => {
+export const getAvailability = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const { date } = req.query;
-        const userId = req.params.userId || req.user._id;
-        console.log("date",date)
+        const { date } = req.query as { date?: string };
+        const userId = req.params.userId || req.user?._id;
+        console.log("date", date)
         if (!date) {
             const dates = await AvailabilityService.getUniqueDates(userId)
                 .withDate()

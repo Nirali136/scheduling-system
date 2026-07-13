@@ -1,14 +1,19 @@
-const jwt = require("jsonwebtoken");
-const User = require("../db/models/User");
-const { ResponseStatus, ValidationMsgs } = require("../utils/constants");
-const ValidationError = require("../utils/ValidationError");
+import jwt from "jsonwebtoken";
+import User from "../db/models/User";
+import { ResponseStatus } from "../utils/constants";
+import { Request, Response, NextFunction } from "express";
 
-const auth = async (req, res, next) => {
+export interface AuthenticatedRequest extends Request {
+    token?: string;
+    user?: any;
+}
+
+const auth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         let token = req.header("Authorization")?.replace("Bearer ", "");
         if (!token && req.headers.cookie) {
             const rawCookies = req.headers.cookie.split(';');
-            const parsedCookies = {};
+            const parsedCookies: Record<string, string> = {};
             rawCookies.forEach(cookie => {
                 const parts = cookie.split('=');
                 if (parts.length >= 2) {
@@ -22,8 +27,8 @@ const auth = async (req, res, next) => {
             throw new Error();
         }
 
-         const secret = process.env.JWT_SECRET || "default_secret_key_change_me";
-        const decoded = jwt.verify(token, secret);
+        const secret = process.env.JWT_SECRET || "default_secret_key_change_me";
+        const decoded = jwt.verify(token, secret) as any;
         const user = await User.findOne({
             _id: decoded._id,
         });
@@ -40,4 +45,4 @@ const auth = async (req, res, next) => {
     }
 };
 
-module.exports = auth;
+export default auth;

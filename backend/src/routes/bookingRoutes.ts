@@ -1,6 +1,6 @@
-const API = require("../utils/apiBuilder");
-const BookingController = require("../controllers/users/BookingController");
-const auth = require("../middleware/auth");
+import API from "../utils/apiBuilder";
+import * as BookingController from "../controllers/users/BookingController";
+import auth from "../middleware/auth";
 
 const router = API.configRoute("/bookings")
     .addPath("/")
@@ -14,4 +14,4 @@ const router = API.configRoute("/bookings")
 
     .getRouter();
 
-module.exports = router;
+export default router;
