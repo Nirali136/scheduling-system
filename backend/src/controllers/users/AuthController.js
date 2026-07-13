@@ -7,6 +7,14 @@ exports.register = async (req, res) => {
         const createdUser = await UserService.insertUserRecord(req.body);
         const user = await UserService.getUserById(createdUser._id).withBasicInfo().execute();
         const token = await UserService.authToken(createdUser);
+        
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        });
+        
         return {user, token};
     } catch (e) {
         throw e;
@@ -20,6 +28,14 @@ exports.login = async (req, res) => {
         .execute();
         const user = await UserService.getUserById(createdUser._id).withBasicInfo().execute();
         const token = await UserService.authToken(createdUser);
+        
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        });
+        
         return {user, token};
     } catch (e) {
         throw new ValidationError(ValidationMsgs.UnableToLogin);
@@ -32,6 +48,9 @@ exports.logout = async (req, res) => {
             return token.token !== req.token;
         });
         await req.user.save();
+        
+        res.clearCookie("token");
+        
         return {message: "Logged out successfully"};
     } catch (e) {
         throw e;

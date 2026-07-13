@@ -3,20 +3,18 @@ import { Form, Button, Container, InputGroup, Card, Row, Col } from 'react-boots
 import { useNavigate, Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import APICallService from '../api/apiCallService';
-import { SIGNUP } from '../api/apiEndPoints';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useStaticText } from '../utils/staticJSON';
 import { success } from '../utils/toast';
-import { useAppDispatch } from '../store/hooks';
-import { setCredentials } from '../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { registerUser, selectAuthLoading } from '../store/slices/authSlice';
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
     const staticText = useStaticText();
     const dispatch = useAppDispatch();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const loading = useAppSelector(selectAuthLoading);
 
     const validationSchema = Yup.object().shape({
         name: Yup.string()
@@ -42,7 +40,6 @@ const Register: React.FC = () => {
         },
         validationSchema,
         onSubmit: async (values) => {
-            setLoading(true);
             try {
                 const payload = {
                     username: values.name,
@@ -50,22 +47,14 @@ const Register: React.FC = () => {
                     password: values.password
                 };
 
-                const apiService = new APICallService(
-                    SIGNUP,
-                    payload
-                );
+                const resultAction = await dispatch(registerUser(payload));
 
-                const response = await apiService.callAPI();
-
-                if (response) {
-                    dispatch(setCredentials({ user: response.user, token: response.token }));
+                if (registerUser.fulfilled.match(resultAction)) {
                     success(staticText.toast.auth.registerSuccess);
                     navigate('/dashboard');
                 }
             } catch (err: any) {
                 console.error("Register Error:", err);
-            } finally {
-                setLoading(false);
             }
         },
     });

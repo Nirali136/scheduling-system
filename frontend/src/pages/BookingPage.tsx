@@ -1,67 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import APICallService from '../api/apiCallService';
-import { GET_AVAILABILITY_DATES, CREATE_BOOKING } from '../api/apiEndPoints';
 import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, parseISO } from 'date-fns';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchAvailableDates, fetchSlots, clearSlots } from '../store/slices/availabilitySlice';
+import { createBooking, resetBookingSuccess } from '../store/slices/bookingSlice';
 
 
 const BookingPage: React.FC = () => {
+    const dispatch = useAppDispatch();
     const { userId } = useParams<{ userId: string }>();
-    const [availableDates, setAvailableDates] = useState<Date[]>([]);
+
+    const { availableDates: rawAvailableDates, slots } = useAppSelector((state) => state.availability);
+    const { bookingSuccess } = useAppSelector((state) => state.booking);
+
+    const availableDates = rawAvailableDates.map((d: string) => parseISO(d));
+
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [slots, setSlots] = useState<string[]>([]);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [guestName, setGuestName] = useState<string>('');
     const [guestEmail, setGuestEmail] = useState<string>('');
-    const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
 
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
     useEffect(() => {
-        fetchAvailableDates();
+        fetchAvailableDatesData();
     }, [userId]);
 
-    const fetchAvailableDates = async () => {
+    const fetchAvailableDatesData = async () => {
+        if (!userId) return;
+        setLoading(true);
         try {
-            const apiService = new APICallService(
-                    GET_AVAILABILITY_DATES,
-                    {},
-                    [userId]
-                );
-            const response = await apiService.callAPI();
-            setAvailableDates(response.dates.map((d: string) => parseISO(d)));
-            setLoading(false);
+            const resultAction = await dispatch(fetchAvailableDates(userId));
+            if (fetchAvailableDates.rejected.match(resultAction)) {
+                setError('Invalid Booking Link or User not found');
+            }
         } catch (err) {
             setError('Invalid Booking Link or User not found');
+        } finally {
             setLoading(false);
         }
     };
 
-    const fetchSlots = async (date: Date) => {
-        try {
-            const dateStr = format(date, 'yyyy-MM-dd');
-            const apiService = new APICallService(
-                    GET_AVAILABILITY_DATES,
-                    { date: dateStr},
-                    [userId]
-                );
-            const response = await apiService.callAPI();
-            setSlots(response.slots);
-        } catch (err) {
-            console.error('Error fetching slots', err);
-        }
+    const fetchSlotsData = async (date: Date) => {
+        if (!userId) return;
+        const dateStr = format(date, 'yyyy-MM-dd');
+        dispatch(fetchSlots({ userId, date: dateStr }));
     };
 
     const handleDateClick = (day: Date) => {
         const isAvailable = availableDates.some(d => isSameDay(d, day));
         if (isAvailable) {
             setSelectedDate(day);
-            setSlots([]);
+            dispatch(clearSlots());
             setSelectedSlot(null);
-            fetchSlots(day);
+            fetchSlotsData(day);
         }
     };
 
@@ -71,24 +66,25 @@ const BookingPage: React.FC = () => {
 
     const handleBook = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedDate || !selectedSlot || !guestName || !guestEmail) return;
+        if (!selectedDate || !selectedSlot || !guestName || !guestEmail || !userId) return;
 
         try {
-            const apiService = new APICallService(
-                CREATE_BOOKING,
-                {
+            const resultAction = await dispatch(
+                createBooking({
                     userId,
                     date: format(selectedDate, 'yyyy-MM-dd'),
                     startTime: selectedSlot,
                     guestName,
                     guestEmail
-                }
+                })
             );
-            await apiService.callAPI();
-            setBookingSuccess(true);
-            fetchSlots(selectedDate);
+            if (createBooking.fulfilled.match(resultAction)) {
+                fetchSlotsData(selectedDate);
+            } else {
+                setError(resultAction.payload as string || 'Booking failed');
+            }
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Booking failed');
+            setError('Booking failed');
         }
     };
 
@@ -175,7 +171,12 @@ const BookingPage: React.FC = () => {
                 <Card className="p-5">
                     <h2 className="text-success">Booking Confirmed!</h2>
                     <p>You have successfully booked {selectedSlot} on {selectedDate && format(selectedDate, 'MMMM d, yyyy')}.</p>
-                    <Button onClick={() => setBookingSuccess(false)}>Book Another</Button>
+                    <Button onClick={() => {
+                        dispatch(resetBookingSuccess());
+                        setSelectedSlot(null);
+                        setGuestName('');
+                        setGuestEmail('');
+                    }}>Book Another</Button>
                 </Card>
             </Container>
         )

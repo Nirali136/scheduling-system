@@ -3,20 +3,18 @@ import { Form, Button, Container, InputGroup, Card, Row, Col } from 'react-boots
 import { useNavigate, Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import APICallService from '../api/apiCallService';
-import { LOGIN } from '../api/apiEndPoints';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useStaticText } from '../utils/staticJSON';
 import { success } from '../utils/toast';
-import { useAppDispatch } from '../store/hooks';
-import { setCredentials } from '../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { loginUser, selectAuthLoading } from '../store/slices/authSlice';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const staticText = useStaticText();
     const dispatch = useAppDispatch();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const loading = useAppSelector(selectAuthLoading);
 
     const validationSchema = Yup.object().shape({
         email: Yup.string()
@@ -33,24 +31,15 @@ const Login: React.FC = () => {
         },
         validationSchema,
         onSubmit: async (values) => {
-            setLoading(true);
             try {
-                const apiService = new APICallService(
-                    LOGIN,
-                    { email: values.email, password: values.password }
-                );
-
-                const response = await apiService.callAPI();
-
-                if (response) {
-                    dispatch(setCredentials({ user: response.user, token: response.token }));
+                const resultAction = await dispatch(loginUser({ email: values.email, password: values.password }));
+                
+                if (loginUser.fulfilled.match(resultAction)) {
                     success(staticText.toast.auth.login);
                     navigate('/dashboard');
                 }
             } catch (err: any) {
                 console.error("Login Error Component Catch:", err);
-            } finally {
-                setLoading(false);
             }
         },
     });

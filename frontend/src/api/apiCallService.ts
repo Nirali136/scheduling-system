@@ -3,8 +3,6 @@ import * as constants from "../utils/constants";
 import GlobalValidations from "../utils/validations";
 import * as apiEndpoints from "./apiEndPoints";
 import axios from "axios";
-// import { getAuth } from "../app/modules/auth"; 
-import { store } from "../store/store";
 
 class APICallService {
     public url: any;
@@ -46,19 +44,9 @@ class APICallService {
         const resourceURL = `${this.url}${apiName}`;
         var myHeaders: any = {
             "ngrok-skip-browser-warning": "69420",
+            platform: "web",
+            appVersion: "1.0",
         };
-        try {
-            var mainAPIName = apiName + " " + apiType;
-            // let token = getAuth();
-            let token = store.getState().auth.token;
-            if (!this.listApi.includes(mainAPIName)) {
-                myHeaders = { ...myHeaders, Authorization: "Bearer " + token };
-            }
-        } catch (error) {
-            console.log(error, "PREF_TOKEN error");
-        }
-        myHeaders = { ...myHeaders, platform: "web" };
-        myHeaders = { ...myHeaders, appVersion: "1.0" };
         var settings: any = {
             redirect: "follow",
             url: resourceURL,
@@ -67,6 +55,7 @@ class APICallService {
             data: {},
             responseType: type,
             timeout: 3600000,
+            withCredentials: true,
         };
         switch (apiType) {
             case constants.GET:

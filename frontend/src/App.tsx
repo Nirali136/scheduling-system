@@ -7,7 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import BookingPage from './pages/BookingPage';
 import { useAppSelector } from './store/hooks';
-import { selectCurrentToken } from './store/slices/authSlice';
+import { selectIsAuthenticated } from './store/slices/authSlice';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -15,16 +15,16 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const token = useAppSelector(selectCurrentToken);
-    if (!token) {
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
     return <>{children}</>;
 };
 
 const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const token = useAppSelector(selectCurrentToken);
-    const hideNav = !token;
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    const hideNav = !isAuthenticated;
 
     return (
         <div className="d-flex flex-column min-vh-100">

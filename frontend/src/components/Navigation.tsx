@@ -2,19 +2,19 @@ import React from 'react';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { logout, selectCurrentToken } from '../store/slices/authSlice';
+import { logout, selectIsAuthenticated } from '../store/slices/authSlice';
 
 const Navigation: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const token = useAppSelector(selectCurrentToken);
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
     const handleLogout = () => {
         dispatch(logout());
         navigate('/login');
     };
 
-    if (!token) return null; 
+    if (!isAuthenticated) return null; 
 
     return (
         <Navbar bg="light" expand="lg">

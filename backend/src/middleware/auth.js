@@ -5,7 +5,23 @@ const ValidationError = require("../utils/ValidationError");
 
 const auth = async (req, res, next) => {
     try {
-        const token = req.header("Authorization").replace("Bearer ", "");
+        let token = req.header("Authorization")?.replace("Bearer ", "");
+        if (!token && req.headers.cookie) {
+            const rawCookies = req.headers.cookie.split(';');
+            const parsedCookies = {};
+            rawCookies.forEach(cookie => {
+                const parts = cookie.split('=');
+                if (parts.length >= 2) {
+                    parsedCookies[parts[0].trim()] = parts[1].trim();
+                }
+            });
+            token = parsedCookies['token'];
+        }
+
+        if (!token) {
+            throw new Error();
+        }
+
          const secret = process.env.JWT_SECRET || "default_secret_key_change_me";
         const decoded = jwt.verify(token, secret);
         const user = await User.findOne({

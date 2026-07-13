@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, ListGroup, Card, Table, Alert } from 'react-bootstrap';
-import APICallService from '../api/apiCallService';
-import { SAVE_AVAILABILITY, GET_BOOKINGS } from '../api/apiEndPoints';
 import { format } from 'date-fns';
-import { useAppSelector } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCurrentUser } from '../store/slices/authSlice';
+import { saveAvailability } from '../store/slices/availabilitySlice';
+import { fetchBookings } from '../store/slices/bookingSlice';
 
 interface Availability {
     date: string;
@@ -22,32 +22,23 @@ interface Booking {
 }
 
 const Dashboard: React.FC = () => {
+    const dispatch = useAppDispatch();
     const user = useAppSelector(selectCurrentUser);
     const userId = user?._id;
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
     const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-    const [bookings, setBookings] = useState<Booking[]>([]);
+    const bookings = useAppSelector((state) => state.booking.bookings) as Booking[];
     const [bookingLink, setBookingLink] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [message, setMessage] = useState<string>('');
 
     useEffect(() => {
         if (userId) {
-            fetchBookings();
+            dispatch(fetchBookings());
         }
-    }, [userId]);
-
-    const fetchBookings = async () => {
-        try {
-            const apiService = new APICallService(GET_BOOKINGS);
-            const response = await apiService.callAPI();
-            setBookings(response);
-        } catch (err) {
-            console.error('Error fetching bookings', err);
-        }
-    };
+    }, [userId, dispatch]);
 
     const handleSaveAvailability = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,22 +48,23 @@ const Dashboard: React.FC = () => {
         }
 
         try {
-            const apiService = new APICallService(
-                SAVE_AVAILABILITY,
-                {
+            const resultAction = await dispatch(
+                saveAvailability({
                     date,
                     startTime,
                     endTime
-                }
+                })
             );
-            const response = await apiService.callAPI();
-
-            setAvailabilities([...availabilities, response]);
-            setMessage('Availability saved successfully!');
-            setError('');
-
+            if (saveAvailability.fulfilled.match(resultAction)) {
+                setAvailabilities([...availabilities, resultAction.payload]);
+                setMessage('Availability saved successfully!');
+                setError('');
+            } else {
+                setError(resultAction.payload as string || 'Failed to save availability');
+                setMessage('');
+            }
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to save availability');
+            setError('Failed to save availability');
             setMessage('');
         }
     };
